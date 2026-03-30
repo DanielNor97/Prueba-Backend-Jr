@@ -1,0 +1,130 @@
+[
+  {
+    "c_estado": "01",
+    "nombre": "Aguascalientes"
+  },
+  {
+    "c_estado": "02",
+    "nombre": "Baja California"
+  },
+  {
+    "c_estado": "03",
+    "nombre": "Baja California Sur"
+  },
+  {
+    "c_estado": "04",
+    "nombre": "Campeche"
+  },
+  {
+    "c_estado": "05",
+    "nombre": "Coahuila de Zaragoza"
+  },
+  {
+    "c_estado": "06",
+    "nombre": "Colima"
+  },
+  {
+    "c_estado": "07",
+    "nombre": "Chiapas"
+  },
+  {
+    "c_estado": "08",
+    "nombre": "Chihuahua"
+  },
+  {
+    "c_estado": "09",
+    "nombre": "Ciudad de México"
+  },
+  {
+    "c_estado": "10",
+    "nombre": "Durango"
+  },
+  {
+    "c_estado": "11",
+    "nombre": "Guanajuato"
+  },
+  {
+    "c_estado": "12",
+    "nombre": "Guerrero"
+  },
+  {
+    "c_estado": "13",
+    "nombre": "Hidalgo"
+  },
+  {
+    "c_estado": "14",
+    "nombre": "Jalisco"
+  },
+  {
+    "c_estado": "15",
+    "nombre": "México"
+  },
+  {
+    "c_estado": "16",
+    "nombre": "Michoacán de Ocampo"
+  },
+  {
+    "c_estado": "17",
+    "nombre": "Morelos"
+  },
+  {
+    "c_estado": "18",
+    "nombre": "Nayarit"
+  },
+  {
+    "c_estado": "19",
+    "nombre": "Nuevo León"
+  },
+  {
+    "c_estado": "20",
+    "nombre": "Oaxaca"
+  },
+  {
+    "c_estado": "21",
+    "nombre": "Puebla"
+  },
+  {
+    "c_estado": "22",
+    "nombre": "Querétaro"
+  },
+  {
+    "c_estado": "23",
+    "nombre": "Quintana Roo"
+  },
+  {
+    "c_estado": "24",
+    "nombre": "San Luis Potosí"
+  },
+  {
+    "c_estado": "25",
+    "nombre": "Sinaloa"
+  },
+  {
+    "c_estado": "26",
+    "nombre": "Sonora"
+  },
+  {
+    "c_estado": "27",
+    "nombre": "Tabasco"
+  },
+  {
+    "c_estado": "28",
+    "nombre": "Tamaulipas"
+  },
+  {
+    "c_estado": "29",
+    "nombre": "Tlaxcala"
+  },
+  {
+    "c_estado": "30",
+    "nombre": "Veracruz de Ignacio de la Llave"
+  },
+  {
+    "c_estado": "31",
+    "nombre": "Yucatán"
+  },
+  {
+    "c_estado": "32",
+    "nombre": "Zacatecas"
+  }
+]

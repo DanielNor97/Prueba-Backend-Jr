@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SEPOMEX API — Buscador Postal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d0f14;
+      --surface:  #161a24;
+      --border:   #252c3f;
+      --accent:   #e84949;
+      --accent2:  #f5a623;
+      --text:     #e8ecf5;
+      --muted:    #6b7599;
+      --mono:     'DM Mono', monospace;
+      --sans:     'Syne', sans-serif;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: baseline;
+      gap: .5rem;
+    }
+    .logo-mx {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -.03em;
+      color: var(--accent);
+    }
+    .logo-sub {
+      font-size: .85rem;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    .key-badge {
+      font-family: var(--mono);
+      font-size: .75rem;
+      background: #1e2436;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .35rem .75rem;
+      color: var(--accent2);
+    }
+    .key-badge span { color: var(--muted); margin-right: .4rem; }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -.04em;
+      line-height: 1.1;
+      margin-bottom: .5rem;
+    }
+    h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+    .subtitle {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: .85rem;
+      margin-bottom: 2.5rem;
+    }
+
+    /* ── Tab nav ── */
+    .tabs {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .tab {
+      font-family: var(--sans);
+      font-size: .85rem;
+      font-weight: 700;
+      padding: .5rem 1.1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .tab:hover   { border-color: var(--accent); color: var(--text); }
+    .tab.active  { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* ── Panel ── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── Search box ── */
+    .search-row {
+      display: flex;
+      gap: .75rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .search-row input, .search-row select {
+      flex: 1;
+      min-width: 160px;
+      font-family: var(--mono);
+      font-size: .9rem;
+      padding: .65rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s;
+    }
+    .search-row input:focus,
+    .search-row select:focus { border-color: var(--accent); }
+
+    .btn {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: .85rem;
+      padding: .65rem 1.4rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-primary  { background: var(--accent);  color: #fff; }
+    .btn-secondary { background: #1e2436; color: var(--text); border: 1px solid var(--border); }
+
+    /* ── Results ── */
+    .result-meta {
+      font-family: var(--mono);
+      font-size: .75rem;
+      color: var(--muted);
+      margin-bottom: .75rem;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: .75rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      transition: border-color .15s;
+    }
+    .card:hover { border-color: var(--accent); }
+    .card-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: .35rem;
+    }
+    .card-meta {
+      font-family: var(--mono);
+      font-size: .75rem;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: .35rem .75rem;
+    }
+    .tag {
+      display: inline-block;
+      background: #1e2436;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: .1rem .45rem;
+      font-size: .7rem;
+      font-family: var(--mono);
+      color: var(--accent2);
+    }
+
+    /* ── Add form ── */
+    .add-form {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.4rem;
+      margin-top: 1.5rem;
+    }
+    .add-form h3 {
+      font-size: .9rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: .75rem;
+      margin-bottom: 1rem;
+    }
+    .form-grid input, .form-grid select {
+      font-family: var(--mono);
+      font-size: .85rem;
+      padding: .6rem .9rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      outline: none;
+    }
+    .form-grid input:focus { border-color: var(--accent); }
+    .form-grid input::placeholder { color: var(--muted); }
+
+    /* ── Status message ── */
+    .status {
+      font-family: var(--mono);
+      font-size: .8rem;
+      padding: .6rem 1rem;
+      border-radius: 8px;
+      margin-top: .75rem;
+      display: none;
+    }
+    .status.ok    { background: #0d2e1a; border: 1px solid #1a5e35; color: #4ade80; display: block; }
+    .status.err   { background: #2e0d0d; border: 1px solid #5e1a1a; color: #f87171; display: block; }
+
+    /* ── CP highlight ── */
+    .cp-banner {
+      background: linear-gradient(135deg, #1a0f0f, #1a1209);
+      border: 1px solid #3d2020;
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .cp-number {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -.03em;
+      color: var(--accent);
+      font-family: var(--mono);
+    }
+    .cp-location {
+      font-size: .9rem;
+      color: var(--muted);
+      margin-top: .25rem;
+    }
+
+    /* ── Loader ── */
+    .loader {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      vertical-align: middle;
+      margin-right: .5rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Empty state ── */
+    .empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+    .empty-icon { font-size: 2rem; margin-bottom: .5rem; }
+
+    @media (max-width: 500px) {
+      header { padding: 1rem; }
+      main { padding: 1.5rem 1rem 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-mx">SEPOMEX</span>
+    <span class="logo-sub">API v1.0</span>
+  </div>
+  <div class="key-badge"><span>API KEY</span>demo-key-123</div>
+</header>
+
+<main>
+  <h1>Buscador<br/><em>Postal</em> México</h1>
+  <p class="subtitle">// Consulta Estados · Municipios · Colonias</p>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="cp">📮 Buscar por CP</button>
+    <button class="tab" data-tab="estados">🗺 Estados</button>
+    <button class="tab" data-tab="municipios">🏙 Municipios</button>
+    <button class="tab" data-tab="colonias">🏘 Colonias</button>
+    <button class="tab" data-tab="agregar">➕ Agregar</button>
+  </div>
+
+  <!-- ── CP Search ── -->
+  <div class="panel active" id="tab-cp">
+    <div class="search-row">
+      <input type="text" id="cp-input" placeholder="Ej: 06000, 44100, 64000" maxlength="5" />
+      <button class="btn btn-primary" onclick="searchCP()">Buscar</button>
+    </div>
+    <div id="cp-results"></div>
+  </div>
+
+  <!-- ── Estados ── -->
+  <div class="panel" id="tab-estados">
+    <div class="search-row">
+      <input type="text" id="estados-input" placeholder="Nombre del estado..." />
+      <button class="btn btn-primary"   onclick="searchEstados()">Buscar</button>
+      <button class="btn btn-secondary" onclick="loadEstados()">Ver todos</button>
+    </div>
+    <div id="estados-results"></div>
+  </div>
+
+  <!-- ── Municipios ── -->
+  <div class="panel" id="tab-municipios">
+    <div class="search-row">
+      <input type="text" id="muni-input" placeholder="Nombre del municipio..." />
+      <button class="btn btn-primary"   onclick="searchMunicipios()">Buscar</button>
+      <button class="btn btn-secondary" onclick="loadMunicipios()">Ver todos</button>
+    </div>
+    <div id="municipios-results"></div>
+  </div>
+
+  <!-- ── Colonias ── -->
+  <div class="panel" id="tab-colonias">
+    <div class="search-row">
+      <input type="text" id="colonia-input" placeholder="Nombre de la colonia..." />
+      <button class="btn btn-primary"   onclick="searchColonias()">Buscar</button>
+      <button class="btn btn-secondary" onclick="loadColonias()">Ver todas</button>
+    </div>
+    <div id="colonias-results"></div>
+  </div>
+
+  <!-- ── Agregar ── -->
+  <div class="panel" id="tab-agregar">
+    <div class="tabs" style="margin-bottom:1rem">
+      <button class="tab active" data-addtab="estado"    onclick="setAddTab('estado')">Estado</button>
+      <button class="tab"        data-addtab="municipio" onclick="setAddTab('municipio')">Municipio</button>
+      <button class="tab"        data-addtab="colonia"   onclick="setAddTab('colonia')">Colonia</button>
+    </div>
+
+    <!-- Add Estado -->
+    <div class="add-form" id="add-estado">
+      <h3>Nuevo Estado</h3>
+      <div class="form-grid">
+        <input id="new-estado-code"   placeholder="c_estado (ej: 33)" />
+        <input id="new-estado-nombre" placeholder="Nombre" />
+      </div>
+      <button class="btn btn-primary" onclick="addEstado()">Guardar Estado</button>
+      <div class="status" id="status-estado"></div>
+    </div>
+
+    <!-- Add Municipio -->
+    <div class="add-form" id="add-municipio" style="display:none">
+      <h3>Nuevo Municipio</h3>
+      <div class="form-grid">
+        <input id="new-muni-mnpio"  placeholder="c_mnpio (ej: 001)" />
+        <input id="new-muni-estado" placeholder="c_estado (ej: 09)" />
+        <input id="new-muni-nombre" placeholder="Nombre" />
+      </div>
+      <button class="btn btn-primary" onclick="addMunicipio()">Guardar Municipio</button>
+      <div class="status" id="status-municipio"></div>
+    </div>
+
+    <!-- Add Colonia -->
+    <div class="add-form" id="add-colonia" style="display:none">
+      <h3>Nueva Colonia</h3>
+      <div class="form-grid">
+        <input id="new-col-id"     placeholder="id_asenta_cpcons" />
+        <input id="new-col-cp"     placeholder="d_codigo (CP, ej: 06000)" maxlength="5" />
+        <input id="new-col-asenta" placeholder="d_asenta (nombre)" />
+        <input id="new-col-tipo"   placeholder="d_tipo_asenta (ej: Colonia)" />
+        <input id="new-col-estado" placeholder="c_estado (ej: 09)" />
+        <input id="new-col-mnpio"  placeholder="c_mnpio (ej: 006)" />
+      </div>
+      <button class="btn btn-primary" onclick="addColonia()">Guardar Colonia</button>
+      <div class="status" id="status-colonia"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const API_KEY = "demo-key-123";
+  const BASE    = "/api";
+
+  // ── Fetch helper ──────────────────────────────────────────────────────────
+  async function api(path, opts = {}) {
+    const res = await fetch(BASE + path, {
+      headers: { "X-API-Key": API_KEY, "Content-Type": "application/json" },
+      ...opts,
+    });
+    return res.json();
+  }
+
+  // ── Tab switching ─────────────────────────────────────────────────────────
+  document.querySelectorAll(".tabs:first-of-type .tab").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tabs:first-of-type .tab").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+    });
+  });
+
+  function setAddTab(name) {
+    ["estado","municipio","colonia"].forEach(n => {
+      document.getElementById("add-" + n).style.display = n === name ? "block" : "none";
+    });
+    document.querySelectorAll("[data-addtab]").forEach(b => {
+      b.classList.toggle("active", b.dataset.addtab === name);
+    });
+  }
+
+  // ── Render helpers ────────────────────────────────────────────────────────
+  function loading(el) {
+    el.innerHTML = `<p style="color:var(--muted);font-family:var(--mono);font-size:.85rem"><span class="loader"></span>Buscando...</p>`;
+  }
+
+  function empty(el, msg = "Sin resultados") {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div>${msg}</div>`;
+  }
+
+  function renderMeta(el, total, q = "") {
+    el.innerHTML = `<p class="result-meta">${total} resultado${total !== 1 ? "s" : ""}${q ? ` para "<strong>${q}</strong>"` : ""}</p>`;
+  }
+
+  function grid(items, html) {
+    return `<div class="results-grid">${items.map(html).join("")}</div>`;
+  }
+
+  // ── CP Search ─────────────────────────────────────────────────────────────
+  async function searchCP() {
+    const cp = document.getElementById("cp-input").value.trim();
+    const el = document.getElementById("cp-results");
+    if (!cp) { el.innerHTML = ""; return; }
+    loading(el);
+    const data = await api(`/colonias/cp/${cp}`);
+    if (data.error) { empty(el, data.error); return; }
+
+    const first = data.data[0];
+    el.innerHTML = `
+      <div class="cp-banner">
+        <div class="cp-number">${cp}</div>
+        <div class="cp-location">
+          ${first.municipio ? first.municipio + " · " : ""}${first.estado || ""}
+        </div>
+      </div>
+      <p class="result-meta">${data.total} colonia${data.total !== 1 ? "s" : ""} encontrada${data.total !== 1 ? "s" : ""}</p>
+      ${grid(data.data, (c) => `
+        <div class="card">
+          <div class="card-title">${c.d_asenta}</div>
+          <div class="card-meta">
+            <span class="tag">${c.d_tipo_asenta}</span>
+            <span>CP ${c.d_codigo}</span>
+            ${c.municipio ? `<span>${c.municipio}</span>` : ""}
+            ${c.estado    ? `<span>${c.estado}</span>`    : ""}
+          </div>
+        </div>`)}
+    `;
+  }
+
+  // Enter key on CP
+  document.getElementById("cp-input").addEventListener("keydown", e => { if (e.key === "Enter") searchCP(); });
+
+  // ── Estados ───────────────────────────────────────────────────────────────
+  async function loadEstados() {
+    const el = document.getElementById("estados-results");
+    loading(el);
+    const data = await api("/estados");
+    renderMeta(el, data.total);
+    el.innerHTML += grid(data.data, (e) => `
+      <div class="card">
+        <div class="card-title">${e.nombre}</div>
+        <div class="card-meta"><span class="tag">c_estado: ${e.c_estado}</span></div>
+      </div>`);
+  }
+
+  async function searchEstados() {
+    const q  = document.getElementById("estados-input").value.trim();
+    const el = document.getElementById("estados-results");
+    if (!q) return loadEstados();
+    loading(el);
+    const data = await api(`/estados/search/${encodeURIComponent(q)}`);
+    if (!data.data?.length) { empty(el); return; }
+    renderMeta(el, data.total, q);
+    el.innerHTML += grid(data.data, (e) => `
+      <div class="card">
+        <div class="card-title">${e.nombre}</div>
+        <div class="card-meta"><span class="tag">c_estado: ${e.c_estado}</span></div>
+      </div>`);
+  }
+
+  // ── Municipios ────────────────────────────────────────────────────────────
+  async function loadMunicipios() {
+    const el = document.getElementById("municipios-results");
+    loading(el);
+    const data = await api("/municipios");
+    renderMeta(el, data.total);
+    el.innerHTML += grid(data.data, muniCard);
+  }
+
+  async function searchMunicipios() {
+    const q  = document.getElementById("muni-input").value.trim();
+    const el = document.getElementById("municipios-results");
+    if (!q) return loadMunicipios();
+    loading(el);
+    const data = await api(`/municipios/search/${encodeURIComponent(q)}`);
+    if (!data.data?.length) { empty(el); return; }
+    renderMeta(el, data.total, q);
+    el.innerHTML += grid(data.data, muniCard);
+  }
+
+  function muniCard(m) {
+    return `
+      <div class="card">
+        <div class="card-title">${m.nombre}</div>
+        <div class="card-meta">
+          <span class="tag">c_mnpio: ${m.c_mnpio}</span>
+          <span class="tag">c_estado: ${m.c_estado}</span>
+        </div>
+      </div>`;
+  }
+
+  // ── Colonias ──────────────────────────────────────────────────────────────
+  async function loadColonias() {
+    const el = document.getElementById("colonias-results");
+    loading(el);
+    const data = await api("/colonias");
+    renderMeta(el, data.total);
+    el.innerHTML += grid(data.data, coloniaCard);
+  }
+
+  async function searchColonias() {
+    const q  = document.getElementById("colonia-input").value.trim();
+    const el = document.getElementById("colonias-results");
+    if (!q) return loadColonias();
+    loading(el);
+    const data = await api(`/colonias/search/${encodeURIComponent(q)}`);
+    if (!data.data?.length) { empty(el); return; }
+    renderMeta(el, data.total, q);
+    el.innerHTML += grid(data.data, coloniaCard);
+  }
+
+  function coloniaCard(c) {
+    return `
+      <div class="card">
+        <div class="card-title">${c.d_asenta}</div>
+        <div class="card-meta">
+          <span class="tag">CP ${c.d_codigo}</span>
+          <span class="tag">${c.d_tipo_asenta}</span>
+          <span>Estado: ${c.c_estado} · Muni: ${c.c_mnpio}</span>
+        </div>
+      </div>`;
+  }
+
+  // ── Add records ───────────────────────────────────────────────────────────
+  function showStatus(id, ok, msg) {
+    const el = document.getElementById(id);
+    el.className = "status " + (ok ? "ok" : "err");
+    el.textContent = msg;
+    setTimeout(() => { el.className = "status"; }, 4000);
+  }
+
+  async function addEstado() {
+    const body = {
+      c_estado: document.getElementById("new-estado-code").value.trim(),
+      nombre:   document.getElementById("new-estado-nombre").value.trim(),
+    };
+    const data = await api("/estados", { method: "POST", body: JSON.stringify(body) });
+    if (data.error) { showStatus("status-estado", false, data.error); return; }
+    showStatus("status-estado", true, `✔ Estado "${data.data.nombre}" creado`);
+    document.getElementById("new-estado-code").value = "";
+    document.getElementById("new-estado-nombre").value = "";
+  }
+
+  async function addMunicipio() {
+    const body = {
+      c_mnpio:  document.getElementById("new-muni-mnpio").value.trim(),
+      c_estado: document.getElementById("new-muni-estado").value.trim(),
+      nombre:   document.getElementById("new-muni-nombre").value.trim(),
+    };
+    const data = await api("/municipios", { method: "POST", body: JSON.stringify(body) });
+    if (data.error) { showStatus("status-municipio", false, data.error); return; }
+    showStatus("status-municipio", true, `✔ Municipio "${data.data.nombre}" creado`);
+  }
+
+  async function addColonia() {
+    const body = {
+      id_asenta_cpcons: document.getElementById("new-col-id").value.trim(),
+      d_codigo:         document.getElementById("new-col-cp").value.trim(),
+      d_asenta:         document.getElementById("new-col-asenta").value.trim(),
+      d_tipo_asenta:    document.getElementById("new-col-tipo").value.trim() || "Colonia",
+      c_estado:         document.getElementById("new-col-estado").value.trim(),
+      c_mnpio:          document.getElementById("new-col-mnpio").value.trim(),
+    };
+    const data = await api("/colonias", { method: "POST", body: JSON.stringify(body) });
+    if (data.error) { showStatus("status-colonia", false, data.error); return; }
+    showStatus("status-colonia", true, `✔ Colonia "${data.data.d_asenta}" creada`);
+  }
+</script>
+</body>
+</html>

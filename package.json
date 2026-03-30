@@ -1,0 +1,15 @@
+{
+  "name": "sepomex-api",
+  "version": "1.0.0",
+  "description": "API de información postal SEPOMEX para México",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "seed": "node src/seed.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  }
+}
